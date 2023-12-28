@@ -8,16 +8,34 @@ import {
 
 import OutlineButton from "../UI/OutlineButton";
 
-import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import {
+  useNavigation,
+  useRoute,
+  useIsFocused,
+} from "@react-navigation/native";
+import { useEffect, useState } from "react";
 import { getMapPreview } from "../../util/location";
 
 export default function LocationPicker() {
   const [pickedLocation, setPickedLocation] = useState();
+  const isFocused = useIsFocused();
 
   const navigation = useNavigation();
+
+  const route = useRoute();
+
   const [locationPermissionInformation, requestPermission] =
     useForegroundPermissions();
+
+  useEffect(() => {
+    if (isFocused && route.params) {
+      const mapPickedLocation = {
+        lat: route.params.pickedLat,
+        lng: route.params.pickedLng,
+      };
+      setPickedLocation(mapPickedLocation);
+    }
+  }, [route, isFocused]);
 
   async function verifyPermissions() {
     if (
@@ -56,7 +74,7 @@ export default function LocationPicker() {
   }
 
   function pickOnMapHandler() {
-    // navigation.navigate("Map");
+    navigation.navigate("Map");
   }
 
   let locationPreview = <Text>No location picked yet.</Text>;
