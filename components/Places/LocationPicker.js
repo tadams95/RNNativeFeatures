@@ -14,7 +14,7 @@ import {
   useIsFocused,
 } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { getMapPreview } from "../../util/location";
+import { getMapPreview, getAddress } from "../../util/location";
 
 export default function LocationPicker({ onPickLocation }) {
   const [pickedLocation, setPickedLocation] = useState();
@@ -38,7 +38,27 @@ export default function LocationPicker({ onPickLocation }) {
   }, [route, isFocused]);
 
   useEffect(() => {
-    onPickLocation(pickedLocation);
+    async function handleLocation() {
+      if (pickedLocation) {
+        try {
+          const address = await getAddress(
+            pickedLocation.lat,
+            pickedLocation.lng
+          );
+  
+          if (address !== null) {
+            onPickLocation({ ...pickedLocation, address: address });
+          } else {
+            // Handle the case where no address is found
+            console.warn('No address found for the given coordinates.');
+          }
+        } catch (error) {
+          console.error('Error fetching address:', error.message);
+        }
+      }
+    }
+  
+    handleLocation();
   }, [pickedLocation, onPickLocation]);
 
   async function verifyPermissions() {
